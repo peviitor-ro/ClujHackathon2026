@@ -5,6 +5,10 @@ name: 0. Creeaza widget pentru o facultate
 on:
   workflow_dispatch:
     inputs:
+      universitate:
+        description: 'Numele universitatii (ex: Universitatea Babes-Bolyai)'
+        required: true
+        type: string
       facultate:
         description: 'Numele facultatii (ex: Facultatea de Matematica si Informatica, UBB)'
         required: true
@@ -99,6 +103,7 @@ jobs:
       - name: Porneste configurarea
         env:
           NAME: ${{ steps.slug.outputs.name }}
+          UNIVERSITATE: ${{ inputs.universitate }}
           FACULTATE: ${{ inputs.facultate }}
           CURRICULUM_URL: ${{ inputs.curriculum_url }}
           TITLU: ${{ inputs.titlu }}
@@ -106,9 +111,23 @@ jobs:
         run: |
           gh workflow run setup.yml --repo "$ORG/$NAME" \
             -f curriculum_url="$CURRICULUM_URL" \
+            -f universitate="$UNIVERSITATE" \
             -f facultate="$FACULTATE" \
             -f titlu="$TITLU" \
             -f culoare="$CULOARE"
+
+      # Intrarea primeste linkul live mai tarziu, din repository-ul facultatii
+      - name: Inregistreaza facultatea in registru
+        env:
+          NAME: ${{ steps.slug.outputs.name }}
+          UNIVERSITATE: ${{ inputs.universitate }}
+          FACULTATE: ${{ inputs.facultate }}
+        run: |
+          node scripts/register_faculty.mjs \
+            --registry "$ORG/facultati-jobs-widget" \
+            --university "$UNIVERSITATE" \
+            --faculty "$FACULTATE" \
+            --repo "$ORG/$NAME"
 
       - name: Rezumat
         env:
@@ -120,7 +139,9 @@ jobs:
             echo ""
             echo "- Repository: https://github.com/$ORG/$NAME"
             echo "- Configurarea ruleaza acum: https://github.com/$ORG/$NAME/actions"
+            echo "- Registru: https://github.com/$ORG/facultati-jobs-widget"
             echo ""
             echo "Dureaza in general 10-20 de minute. Cand se termina, codul de"
-            echo "integrare apare in \`EMBED.md\` din repository-ul nou."
+            echo "integrare apare in \`EMBED.md\` din repository-ul nou, iar"
+            echo "intrarea din registru primeste linkul live al widgetului."
           } >> "$GITHUB_STEP_SUMMARY"

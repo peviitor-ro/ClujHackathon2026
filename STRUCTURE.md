@@ -61,6 +61,7 @@ Starea widgetului: ce s-a configurat, unde e publicat și profilul de competenț
 
 | Câmp | Tip | Descriere |
 |------|-----|-----------|
+| `university` | `string` | Numele universității; determină în ce fișier ajunge facultatea în registrul organizației |
 | `faculty` | `string` | Numele facultății, dat ca input sau dedus din curriculă |
 | `curriculumUrl` | `string` | Linkul planului de învățământ; sursa întregului pipeline |
 | `title` | `string` | Titlul implicit afișat în widget |
@@ -101,3 +102,26 @@ Ambele fișiere sunt scrise de [`scripts/generate_jobs.mjs`](scripts/generate_jo
 6. Scrie `jobs.json` și actualizează `conf/widget.json`
 
 Câmpul `pagesUrl` e completat separat de [`scripts/set_pages_url.mjs`](scripts/set_pages_url.mjs), care generează și `EMBED.md`.
+
+---
+
+## Registrul organizației
+
+Separat de repository-ul fiecărei facultăți, organizația are un repository `facultati-jobs-widget` cu toate facultățile care au widget:
+
+```
+facultati-jobs-widget/
+├── README.md                              (generat — index de universități)
+├── registry.json                          (sursa de adevăr)
+└── universitati/
+    └── universitatea-babes-bolyai.md      (generat — facultățile universității)
+```
+
+Fișierele markdown sunt regenerate integral din `registry.json` la fiecare scriere, deci actualizarea unei intrări nu depinde de parsarea unui tabel scris de mână. Numele fișierului vine din numele universității, fără diacritice — `Universitatea Babeș-Bolyai` → `universitatea-babes-bolyai.md`.
+
+Fiecare facultate e scrisă de două ori de [`scripts/register_faculty.mjs`](scripts/register_faculty.mjs):
+
+1. la crearea repository-ului, cu status `în configurare`
+2. la finalul configurării, cu linkul live al widgetului și status `activ`
+
+Identitatea unei intrări e `repo`, nu numele — redenumirea facultății actualizează rândul existent în loc să adauge unul nou. Scrierile concurente sunt rezolvate prin reîncercare: dacă push-ul e respins, se reia clonarea și upsert-ul peste versiunea proaspătă.

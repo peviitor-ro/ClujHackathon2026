@@ -30,6 +30,7 @@ const { values: args } = parseArgs({
   options: {
     curriculum: { type: 'string' },
     faculty: { type: 'string' },
+    university: { type: 'string' },
     title: { type: 'string' },
     color: { type: 'string' },
     'rebuild-profile': { type: 'boolean', default: false },
@@ -322,6 +323,9 @@ async function main() {
   config.curriculumUrl = clean(args.curriculum) || config.curriculumUrl || '';
   config.title = clean(args.title) || config.title || 'Joburi pentru studenți';
   config.color = clean(args.color) || config.color || '#4f46e5';
+  // Universitatea nu se deduce din curricula — vine ca input, ca sa nu se
+  // fragmenteze registrul cu variante scrise diferit ale aceluiasi nume
+  config.university = clean(args.university) || config.university || '';
   const facultyHint = clean(args.faculty) || config.faculty || '';
 
   if (!config.curriculumUrl) {
