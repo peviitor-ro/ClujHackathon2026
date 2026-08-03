@@ -44,7 +44,7 @@ export async function getJobs() {
         : job.salary || null,
       date: job.date || null,
       status: job.status || "published",
-      f_tag: job.f_tag || [],
+      tags: job.tags || [],
       url: job.url || "",
       _root_: job._root_ || job.url || "",
     };

@@ -1,8 +1,10 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Build-ul frontendului si publicarea pe GitHub Pages.
+# Apelat de workflow-urile de configurare si de reimprospatare, dar poate fi rulat si manual.
+name: Build & Deploy Pages
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -25,6 +27,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # ref (nu SHA-ul de la declansare) ca sa prindem commitul facut de jobul anterior
+          ref: ${{ github.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -32,6 +37,12 @@ jobs:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Install dependencies
         run: npm install
@@ -41,10 +52,7 @@ jobs:
         run: npm run build
         working-directory: frontend
         env:
-          BASE_URL: /${{ github.event.repository.name }}/
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+          BASE_URL: ${{ steps.pages.outputs.base_path }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

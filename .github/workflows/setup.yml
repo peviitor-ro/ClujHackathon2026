@@ -1,0 +1,91 @@
+# Singurul pas manual de care are nevoie o facultate dupa ce creeaza repo-ul din template.
+name: 1. Configureaza widgetul facultatii
+
+on:
+  workflow_dispatch:
+    inputs:
+      curriculum_url:
+        description: 'Link catre planul de invatamant al facultatii'
+        required: true
+        type: string
+      facultate:
+        description: 'Numele facultatii (optional, altfel se deduce din curricula)'
+        required: false
+        type: string
+      titlu:
+        description: 'Titlul afisat in widget'
+        required: false
+        default: 'Joburi pentru studenti'
+        type: string
+      culoare:
+        description: 'Culoarea temei, hex'
+        required: false
+        default: '#4f46e5'
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instaleaza dependinte
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          npm install -g opencode-ai@latest
+
+      - name: Activeaza GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Genereaza joburile din curricula
+        env:
+          CURRICULUM_URL: ${{ inputs.curriculum_url }}
+          FACULTATE: ${{ inputs.facultate }}
+          TITLU: ${{ inputs.titlu }}
+          CULOARE: ${{ inputs.culoare }}
+        run: |
+          node scripts/generate_jobs.mjs \
+            --curriculum="$CURRICULUM_URL" \
+            --faculty="$FACULTATE" \
+            --title="$TITLU" \
+            --color="$CULOARE"
+
+      - name: Salveaza URL-ul de Pages si codul de integrare
+        env:
+          PAGES_URL: ${{ steps.pages.outputs.base_url }}
+        run: node scripts/set_pages_url.mjs --url="$PAGES_URL"
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add jobs.json conf/widget.json EMBED.md
+          if git diff --cached --quiet; then
+            echo "Nimic de commis"
+          else
+            git commit -m "setup: configureaza widgetul facultatii"
+            git push
+          fi
+
+  deploy:
+    needs: configure
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

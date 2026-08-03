@@ -5,7 +5,7 @@ const Badge = React.forwardRef(({ className, variant = "default", ...props }, re
   const baseStyles = "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 select-none";
 
   const variants = {
-    default: "border-transparent bg-indigo-600 text-white shadow",
+    default: "border-transparent btn-accent shadow",
     secondary: "border-transparent bg-code-bg text-text-h",
     destructive: "border-transparent bg-rose-600 text-white shadow",
     outline: "border-border text-text hover:bg-code-bg",

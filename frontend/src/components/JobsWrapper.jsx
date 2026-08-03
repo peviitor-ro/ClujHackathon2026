@@ -18,7 +18,7 @@ function EmptyJobCard({ totalJobsCount, onResetFilter }) {
             className={`h-10 w-10 rounded-xl bg-gradient-to-br ${
               isNoDataAtAll
                 ? "from-red-500 to-rose-600"
-                : "from-indigo-500 to-indigo-700"
+                : "from-slate-500 to-slate-700"
             } flex items-center justify-center text-white shrink-0 shadow-sm`}
             aria-hidden="true"
           >
@@ -123,7 +123,7 @@ export function JobsWrapper({
 
       <Button
         variant="outline"
-        className="w-full py-2.5 mt-1 border-indigo-600/30 hover:border-indigo-600/60 text-indigo-600 dark:text-indigo-400 font-bold"
+        className="w-full py-2.5 mt-1 btn-accent-outline font-bold"
         onClick={() =>
           window.open("https://peviitor.ro/", "_blank", "noopener,noreferrer")
         }

@@ -106,9 +106,9 @@ export function JobCard({ job, onApply }) {
             className="flex items-center gap-1 shrink-0 ml-auto"
             aria-label="Tehnologii și competențe"
           >
-            {((job.f_tag || []).length > 2
-              ? [...(job.f_tag || []).slice(0, 2), "..."]
-              : job.f_tag || []
+            {((job.tags || []).length > 2
+              ? [...(job.tags || []).slice(0, 2), "..."]
+              : job.tags || []
             ).map((tag, idx) => (
               <Badge
                 key={`${tag}-${idx}`}

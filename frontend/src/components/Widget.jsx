@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getJobs } from "../services/api";
 import { JobsWrapper } from "./JobsWrapper";
+import { config, getWidgetParams } from "../config";
 import { Moon, Sun } from "lucide-react";
 
 function Widget() {
@@ -10,6 +11,10 @@ function Widget() {
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const params = getWidgetParams();
+  const title = params.get("title") || config.title;
+  const color = params.get("color") || config.color;
 
   useEffect(() => {
     let active = true;
@@ -34,6 +39,12 @@ function Widget() {
     localStorage.setItem("peviitor-theme", theme);
   }, [theme]);
 
+  // Stilul inline bate si :root, si .dark, deci culoarea facultatii tine pe ambele teme
+  useEffect(() => {
+    if (!color) return;
+    document.documentElement.style.setProperty("--accent", color);
+  }, [color]);
+
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };
@@ -51,12 +62,12 @@ function Widget() {
       style={{ maxWidth: "320px", width: "100%" }}
     >
       <div className="flex items-center justify-between px-3 py-2 bg-bg border-b border-neutral-400/30">
-        <span className="text-sm font-bold tracking-tight text-text-h">
-          peViitor.ro
+        <span className="text-sm font-bold tracking-tight text-text-h truncate pr-2">
+          {title}
         </span>
         <button
           onClick={toggleTheme}
-          className="h-7 w-7 rounded-lg text-text hover:text-text-h hover:bg-border/40 border-0 flex items-center justify-center cursor-pointer transition-colors"
+          className="h-7 w-7 shrink-0 rounded-lg text-text hover:text-text-h hover:bg-border/40 border-0 flex items-center justify-center cursor-pointer transition-colors"
           aria-label={theme === "light" ? "Mod întunecat" : "Mod luminos"}
         >
           {theme === "light" ? (
@@ -71,7 +82,7 @@ function Widget() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-xs text-text/60 font-semibold gap-2">
             <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: "#4f46e5", borderTopColor: "transparent" }}
+              style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
             ></div>
             <span>Se încarcă joburile...</span>
           </div>

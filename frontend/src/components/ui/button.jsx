@@ -16,8 +16,7 @@ const Button = React.forwardRef(
       "inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all focus:outline-none disabled:pointer-events-none disabled:opacity-50 active:scale-98 select-none";
 
     const variants = {
-      default:
-        "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-0",
+      default: "btn-accent shadow-sm focus:ring-2 focus:ring-offset-0",
       outline:
         "border border-border bg-bg-card hover:bg-code-bg text-text-h focus:ring-2 focus:ring-accent/20 focus:ring-offset-0",
       secondary:
@@ -25,7 +24,7 @@ const Button = React.forwardRef(
       destructive:
         "bg-rose-600 hover:bg-rose-700 text-white shadow-sm focus:ring-2 focus:ring-rose-500/20 focus:ring-offset-0",
       ghost: "hover:bg-code-bg hover:text-text-h text-text",
-      link: "text-indigo-600 dark:text-indigo-400 hover:underline underline-offset-4 font-semibold",
+      link: "text-accent hover:underline underline-offset-4 font-semibold",
     };
 
     const sizes = {

@@ -1,66 +1,44 @@
 import { useEffect, useState } from "react";
 import Widget from "./Widget";
+import { config } from "../config";
 import { Moon, Sun, Copy, Check } from "lucide-react";
 
-function getRepoInfo() {
-  const path = window.location.pathname.replace(/\/+$/, "");
-  const parts = path.split("/").filter(Boolean);
-  if (parts.length >= 2) {
-    return { owner: parts[0], repo: parts[1] };
-  }
-  const hostParts = window.location.hostname.split(".");
-  if (hostParts.length >= 2 && hostParts[0] !== "localhost" && hostParts[0] !== "127") {
-    return { owner: hostParts[0], repo: path.slice(1).split("/")[0] || "" };
-  }
-  return null;
-}
+function getWidgetCode() {
+  const base =
+    config.pagesUrl ||
+    window.location.origin + window.location.pathname.replace(/\/+$/, "");
 
-const REPO_INFO = getRepoInfo();
-const TAG_URL = REPO_INFO
-  ? `https://raw.githubusercontent.com/${REPO_INFO.owner}/${REPO_INFO.repo}/main/conf/local_tag.md`
-  : null;
+  const params = new URLSearchParams();
+  if (config.title) params.set("title", config.title);
+  if (config.color) params.set("color", config.color);
+  const query = params.toString() ? `?${params}` : "";
 
-function parseTag(text) {
-  if (!text) return null;
-  const lines = text.trim().split("\n");
-  return lines[0].trim() || null;
-}
-
-function getWidgetCode(tag) {
-  const base = window.location.origin + window.location.pathname.replace(/\/+$/, "");
-  const t = tag || "NUME_TAG";
   return `<iframe
-  src="${base}/#/widget?tag=${t}&title=Titlu&color=%231D4ED8"
+  src="${base}/#/widget${query}"
   width="100%"
   height="650px"
   style="border: none; background: transparent;"
 ></iframe>`;
 }
 
+function formatDate(iso) {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleDateString("ro-RO", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return null;
+  }
+}
+
 function HomePage() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("peviitor-theme") || "light";
   });
-  const [tag, setTag] = useState("NUME_TAG");
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!TAG_URL) {
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    fetch(TAG_URL, { signal: controller.signal })
-      .then((r) => r.text())
-      .then((text) => {
-        const parsed = parseTag(text);
-        if (parsed) setTag(parsed);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -76,7 +54,8 @@ function HomePage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const widgetCode = getWidgetCode(tag);
+  const widgetCode = getWidgetCode();
+  const updatedAt = formatDate(config.updatedAt);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(widgetCode).then(() => {
@@ -117,68 +96,37 @@ function HomePage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-3xl mx-auto px-4 py-8 space-y-10">
         <section className="space-y-4">
           <h2 className="text-xl font-bold text-text-h">
-            Integrează widget-ul pe site-ul facultății
+            {config.faculty
+              ? `Widget de joburi — ${config.faculty}`
+              : "Widget de joburi pentru facultatea ta"}
           </h2>
           <p className="text-sm leading-relaxed">
-            Acest widget afișează locuri de muncă potrivite pentru studenții
-            facultății tale. Se integrează pe orice site printr-un simplu
+            Joburile de mai jos sunt selectate automat pe baza planului de
+            învățământ al facultății. Widgetul se integrează pe orice site
+            printr-un simplu
             <code className="bg-code-bg text-accent px-1.5 py-0.5 rounded text-xs mx-1">&lt;iframe&gt;</code>.
           </p>
+          {updatedAt && (
+            <p className="text-xs text-text/60">
+              Joburi actualizate ultima dată pe {updatedAt}.
+            </p>
+          )}
         </section>
 
         <section className="space-y-3">
           <h3 className="text-sm font-bold text-text-h uppercase tracking-wider">
-            1. Obține tag-ul facultății
+            Cod de integrare
           </h3>
           <p className="text-sm leading-relaxed">
-            Mergi pe{" "}
-            <a
-              href="https://github.com/peviitor-ro/jobs-widget"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent hover:underline font-medium"
-            >
-              repo-ul principal
-            </a>
-            , rulează acțiunea <strong>Genereaza Tag Unic Facultate</strong> cu
-            numele universității și facultății, apoi salvează tag-ul primit.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h3 className="text-sm font-bold text-text-h uppercase tracking-wider">
-            2. Fă fork la template
-          </h3>
-          <p className="text-sm leading-relaxed">
-            Creează un nou repository din acest template. În fișierul{" "}
+            Copiază codul de mai jos în pagina site-ului facultății, acolo unde
+            vrei să apară widgetul. Îl găsești și în fișierul{" "}
             <code className="bg-code-bg text-accent px-1.5 py-0.5 rounded text-xs">
-              conf/local_tag.md
-            </code>
-            , adaugă tag-ul primit și sursa curriculum-ului facultății tale.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h3 className="text-sm font-bold text-text-h uppercase tracking-wider">
-            3. Rulează pipeline-ul
-          </h3>
-          <p className="text-sm leading-relaxed">
-            Activează GitHub Pages pe fork-ul tău, apoi rulează acțiunea{" "}
-            <strong>Full Pipeline</strong>. După finalizare, widget-ul va fi
-            disponibil la URL-ul tău de GitHub Pages.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h3 className="text-sm font-bold text-text-h uppercase tracking-wider">
-            4. Încorporează pe site-ul facultății
-          </h3>
-          <p className="text-sm leading-relaxed">
-            Adaugă codul de mai jos pe site-ul facultății (tag-ul este deja
-            completat automat):
+              EMBED.md
+            </code>{" "}
+            din repository.
           </p>
 
           <div className="relative">
@@ -198,6 +146,11 @@ function HomePage() {
             </button>
           </div>
 
+          <p className="text-sm leading-relaxed">
+            Poți suprascrie aspectul direct din URL, fără să reconfigurezi
+            repository-ul:
+          </p>
+
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
@@ -209,19 +162,18 @@ function HomePage() {
               </thead>
               <tbody>
                 <tr className="border-b border-border">
-                  <td className="py-2 pr-4 font-mono text-accent">tag</td>
-                  <td className="py-2 pr-4">Tag-ul facultății</td>
-                  <td className="py-2 font-mono">{loading ? "..." : tag}</td>
-                </tr>
-                <tr className="border-b border-border">
                   <td className="py-2 pr-4 font-mono text-accent">title</td>
                   <td className="py-2 pr-4">Titlul afișat în widget</td>
-                  <td className="py-2 font-mono">Facultatea de Matematică și Informatică</td>
+                  <td className="py-2 font-mono">{config.title}</td>
                 </tr>
                 <tr className="border-b border-border">
                   <td className="py-2 pr-4 font-mono text-accent">color</td>
-                  <td className="py-2 pr-4">Culoarea temei (hex)</td>
-                  <td className="py-2 font-mono">%231D4ED8</td>
+                  <td className="py-2 pr-4">
+                    Culoarea temei, hex (<code>#</code> se scrie <code>%23</code>)
+                  </td>
+                  <td className="py-2 font-mono">
+                    {config.color.replace("#", "%23")}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -233,16 +185,27 @@ function HomePage() {
             Previzualizare
           </h3>
           <p className="text-sm leading-relaxed">
-            Mai jos poți vedea cum arată widget-ul. Acesta este același cod pe
-            care îl vei încorpora pe site-ul facultății.
+            Exact ce va vedea studentul pe site-ul facultății.
           </p>
           <Widget />
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="text-sm font-bold text-text-h uppercase tracking-wider">
+            Actualizarea joburilor
+          </h3>
+          <p className="text-sm leading-relaxed">
+            Joburile se reîmprospătează automat săptămânal. Le poți actualiza și
+            manual rulând acțiunea{" "}
+            <strong>2. Reimprospateaza joburile</strong> din tab-ul Actions al
+            repository-ului.
+          </p>
         </section>
       </main>
 
       <footer className="border-t border-border mt-12">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between text-xs text-text/60">
-          <span>peViitor.ro — Cluj Hackathon 2026</span>
+          <span>peViitor.ro</span>
           <a
             href="https://github.com/peviitor-ro/jobs-widget"
             target="_blank"
