@@ -1,23 +1,30 @@
-# Structura fișierului `jobs.json`
+# Structura fișierelor de date
 
-`jobs.json` este un array JSON care conține joburile matcheate de agentul AI. Fiecare obiect reprezintă un anunț de loc de muncă agregat din API-ul peviitor.ro.
+Repository-ul are două fișiere de date, ambele scrise de acțiunile din `.github/workflows/`. Nu le edita manual — modificările se pierd la următoarea rulare.
+
+- [`jobs.json`](#jobsjson) — joburile potrivite, consumate de widget. **Nu există în template**: apare la prima rulare a acțiunii de configurare
+- [`conf/widget.json`](#confwidgetjson) — configurarea widgetului și profilul de competențe. Există în template, cu valori goale
 
 ---
 
-## Câmpurile unui obiect job
+## `jobs.json`
+
+Array JSON cu joburile pe care AI-ul le-a considerat potrivite pentru studenții facultății. Fiecare obiect e un anunț agregat din API-ul peviitor.ro, îmbogățit cu rezultatul evaluării.
 
 | Câmp | Tip | Obligatoriu | Descriere |
 |------|-----|-------------|-----------|
-| `url` | `string[]` | da | Link-ul direct către anunțul original (array cu un singur element) |
+| `url` | `string[]` | da | Link-ul către anunțul original (array cu un singur element) |
 | `title` | `string` | da | Titlul postului |
 | `company` | `string` | da | Numele companiei angajatoare |
 | `location` | `string[]` | da | Lista de orașe/locații |
 | `salary` | `string[]` | nu | Salariul exprimat ca string (ex: `"4000-6000 RON"`) |
-| `date` | `string` (ISO 8601) | nu | Data publicării anunțului (ex: `"2026-05-22T00:00:00Z"`) |
+| `date` | `string` (ISO 8601) | nu | Data publicării anunțului |
 | `status` | `string` | da | Starea anunțului (ex: `"activ"`, `"published"`) |
-| `f_tag` | `string[]` | da | Tag-ul (tag-urile) de filtrare — vezi secțiunea dedicată |
-| `matchPercentage` | `number` | da | Scorul de potrivire (0-100) calculat de agentul AI |
-| `reason` | `string` | da | Explicația agentului pentru potrivire |
+| `_version_` | `number` | nu | Identificatorul intern din API-ul peviitor; widgetul îl folosește ca cheie de listă |
+| `_root_` | `string` | nu | URL-ul de aplicare; widgetul îl preferă în locul lui `url` |
+| `tags` | `string[]` | da | Competențele care au dus la potrivire — vezi mai jos |
+| `matchPercentage` | `number` | da | Scorul de potrivire (0-100) dat de AI |
+| `reason` | `string` | da | Explicația AI-ului pentru potrivire |
 
 ### Exemplu
 
@@ -30,49 +37,67 @@
   "salary": ["de la 785 până la 865 EUR/lună"],
   "date": "2026-05-14T00:00:00Z",
   "status": "activ",
-  "f_tag": ["UBBFPSE"],
+  "_version_": 1834729384729,
+  "_root_": "https://www.bestjobs.eu/loc-de-munca/...",
+  "tags": ["Comunicare", "Negociere"],
   "matchPercentage": 55,
-  "reason": "Rol implică interacțiune cu clienți, comunicare și negociere — skill-uri din aria mea (comunicare eficientă, relaționare)."
+  "reason": "Rol implică interacțiune cu clienți, comunicare și negociere — skill-uri din aria mea."
 }
 ```
 
----
+### Câmpul `tags`
 
-## Câmpul `f_tag` în detaliu
+Maximum 2 competențe scurte, alese de AI din profilul studentului, care au determinat potrivirea. Widgetul le afișează ca badge-uri pe cardul jobului.
 
-Câmpul `f_tag` (array de string-uri) asociază fiecare job cu una sau mai multe **persoane (agenți)** care caută activ un loc de muncă. Fiecare valoare din array corespunde numelui unui fișier Markdown din directorul `filter/` (fără extensia `.md`).
+Sunt specifice fiecărui job, nu facultății: două anunțuri din același repository pot avea `tags` complet diferite. Dacă AI-ul nu identifică nicio competență clară, array-ul rămâne gol și cardul se afișează fără badge-uri.
 
-### Cum funcționează
-
-1. În `filter/` există fișiere de tip `NUME.md` care descriu **competențele** unei persoane (curriculum universitar, skill-uri).
-2. Agentul AI (definit în `agents/student.md`) analizează fiecare anunț de job și, dacă skill-urile persoanei se potrivesc, adaugă tag-ul respectiv în `f_tag`.
-3. Joburile pot primi multiple tag-uri dacă se potrivesc cu mai multe persoane.
-
-### Valorile curente
-
-| `f_tag` | Fișier filtru | Persoană / Profil |
-|---------|---------------|-------------------|
-| `"UBBFPSE"` | `filter/UBBFPSE.md` | Student al **Facultății de Psihologie și Științe ale Educației, UBB** — profil psiho-pedagogic |
+> **Notă pentru versiunile vechi:** câmpul `f_tag` (tag-ul unic al facultății, ex: `UBBFPSE`) nu mai există. Fiecare facultate are propriul repository cu propriul `jobs.json`, deci nu mai e nevoie de un tag care să separe joburile între facultăți.
 
 ---
 
-## Câmpurile `matchPercentage` și `reason`
+## `conf/widget.json`
 
-Aceste câmpuri sunt adăugate de agentul AI după analizarea fiecărui job:
+Starea widgetului: ce s-a configurat, unde e publicat și profilul de competențe cache-uit.
 
-- **`matchPercentage`** — scor de la 0 la 100 care indică cât de bine se potrivește jobul cu skill-urile persoanei
-- **`reason`** — explicație narativă a agentului, menționând skill-urile potrivite și cele lipsă
+| Câmp | Tip | Descriere |
+|------|-----|-----------|
+| `faculty` | `string` | Numele facultății, dat ca input sau dedus din curriculă |
+| `curriculumUrl` | `string` | Linkul planului de învățământ; sursa întregului pipeline |
+| `title` | `string` | Titlul implicit afișat în widget |
+| `color` | `string` | Culoarea implicită a temei, hex |
+| `pagesUrl` | `string` | URL-ul public de GitHub Pages, completat după primul deploy |
+| `profile` | `object \| null` | Profilul de competențe derivat din curriculă |
+| `updatedAt` | `string` (ISO 8601) | Când au fost generate ultima dată joburile |
+
+### Câmpul `profile`
+
+```json
+{
+  "faculty": "Facultatea de Matematică și Informatică, UBB",
+  "domains": ["IT", "Analiză de date"],
+  "skills": ["Programare orientată pe obiecte", "Baze de date", "..."],
+  "keywords": ["junior developer", "internship", "data analyst", "..."],
+  "sourceUrl": "https://..."
+}
+```
+
+- `domains` și `skills` formează promptul cu care AI-ul evaluează fiecare anunț
+- `keywords` sunt interogările trimise către API-ul peviitor.ro
+- `sourceUrl` reține curricula din care a fost derivat profilul
+
+Profilul se regenerează doar dacă lipsește, dacă `curriculumUrl` s-a schimbat față de `sourceUrl`, sau dacă se rulează acțiunea de refresh cu opțiunea **reface_profil**. Altfel e refolosit, ca să nu recitim curricula la fiecare actualizare de joburi.
 
 ---
 
 ## Generare
 
-Joburile sunt generate automat prin scriptul `scripts/fetch_agent_jobs.mjs` care:
+Ambele fișiere sunt scrise de [`scripts/generate_jobs.mjs`](scripts/generate_jobs.mjs), care:
 
-1. Citește tag-ul din `conf/local_tag.md`
-2. Citește profilul agentului din `agents/student.md`
-3. Generează cuvinte cheie de căutare pe baza profilului
-4. Interoghează API-ul peviitor.ro (`https://api.peviitor.ro/v1/search/`)
-5. Extrage descrierile joburilor
-6. Trimite fiecare batch la agentul AI pentru evaluare
-7. Salvează joburile potrivite în `jobs.json`
+1. Citește `conf/widget.json` și îl completează cu argumentele primite din workflow
+2. Descarcă planul de învățământ de la `curriculumUrl` (PDF-uri via `pdftotext`, altfel textul paginii HTML)
+3. Derivă profilul de competențe printr-un singur apel opencode
+4. Interoghează `https://api.peviitor.ro/v1/search/` cu fiecare keyword și deduplică rezultatele
+5. Citește descrierile anunțurilor și le evaluează în batch-uri de 25, până la 30 de joburi potrivite
+6. Scrie `jobs.json` și actualizează `conf/widget.json`
+
+Câmpul `pagesUrl` e completat separat de [`scripts/set_pages_url.mjs`](scripts/set_pages_url.mjs), care generează și `EMBED.md`.

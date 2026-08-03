@@ -1,66 +1,85 @@
 # Job Widget — Filtrare inteligentă a locurilor de muncă
 
-**Filtrare inteligentă a locurilor de muncă folosind AI**
+**Widget de joburi pentru site-ul facultății tale, populat automat cu AI**
+
+Acest repository este un **template**. Fiecare facultate își creează propriul repository din el, rulează o singură acțiune și primește un widget gata de încorporat pe site-ul propriu.
 
 ## Ideea proiectului
 
-Colectăm toate locurile de muncă de pe [peviitor.ro](https://peviitor.ro) și, pe baza unor tag-uri generate automat cu ajutorul AI, determinăm ce joburi se potrivesc pentru fiecare facultate și școală profesională din România.
-
-## Stack tehnologic
-
-- **n8n** – orchestrare workflow-uri și colectare date
-- **OpenCode** – agenți AI pentru procesare și taguire
-- **AI (LLM)** – generare tag-uri și matching inteligent
-- **Peviitor.ro** – sursa principală de date (joburi)
+Colectăm locurile de muncă de pe [peviitor.ro](https://peviitor.ro) și, pornind de la planul de învățământ al fiecărei facultăți, determinăm cu ajutorul AI ce joburi se potrivesc studenților acelei facultăți.
 
 ## Cum funcționează
 
-1. Extragem joburile din API-ul Peviitor
-2. Analizăm fiecare job cu ajutorul AI pentru a extrage tag-uri relevante (domeniu, tehnologii, skill-uri, nivel)
-3. Mapăm facultățile și școlile profesionale pe baza profilelor lor de studiu
-4. Match-uim tag-urile joburilor cu profilurile instituțiilor de învățământ
-5. Generăm recomandări personalizate per instituție
+Totul se întâmplă într-o singură acțiune de GitHub, care primește ca input **linkul către planul de învățământ**:
 
-## Local tag:
+1. Descarcă planul de învățământ (PDF-uri sau pagina HTML)
+2. Deduce cu AI profilul de competențe al studentului și cuvintele cheie de căutare
+3. Interoghează API-ul peviitor.ro cu acele cuvinte cheie
+4. Evaluează fiecare anunț cu AI și păstrează joburile potrivite în `jobs.json`
+5. Activează GitHub Pages, publică widgetul și scrie codul de integrare în `EMBED.md`
 
-După ce am făcut fork la repo, în conf/local_tag.md, în root, scriem tag-ul folosit de această facultate.
-Tot aici punem si sursa de unde isi va lua agentul materiile si va deduce si skillurile studentului.
+Nu există fișiere de curriculum sau de agent de întreținut manual — profilul de competențe e derivat la rulare și cache-uit în `conf/widget.json`.
 
-Formatul pentru local_tag.md este urmatorul:
-TAG
-sursa: exemplu.com
+## Stack tehnologic
 
-## Lista materii:
+- **GitHub Actions** — orchestrarea întregului pipeline
+- **OpenCode** — rularea modelului AI pentru extragerea profilului și matching
+- **peviitor.ro API** — sursa de joburi
+- **React + Vite + Tailwind** — widgetul, publicat pe GitHub Pages
 
-In dir filter/ punem un fisier .md care are ca nume tagul mentionat in conf/local_tag.md, cu lista de materii, folosind sursa sa extragem materiile + cursurile + sa deducem skillurile studentului.
-Acest fisier din filter/ va fi generat cu un prompt in opencode prin GitHUB AGENTS
+## Pentru facultăți
 
-## Cream un student.md
-student.md va fi in folderul agents si va contine un prompt care va fi inspirat din Ada,md si Medeea.md si va fi personalizat pe baza celor extrase in folderul filter/
-student.md va fi generat cu un prompt de catre opencode si rulat in GitHUB Actions.
+1. **Use this template** → creează un repository **public** în organizație
+2. Din tab-ul **Actions**, rulează **1. Configureaza widgetul facultatii** cu linkul planului de învățământ
+3. Copiază `<iframe>`-ul din `EMBED.md` pe site-ul facultății
 
-## Widget Incorporabil
+Ghidul complet, cu capturi și explicații pentru fiecare câmp, e în [wiki](https://github.com/peviitor-ro/jobs-widget/wiki).
 
-Widget-ul de joburi **poate fi încorporat pe site-ul oricărei facultăți** printr-un simplu `<iframe>`. O singură linie de cod este suficientă:
+## Widget încorporabil
 
-Înlocuiește `URL_DEPLOY` cu URL-ul propriu de GitHub Pages (ex: `https://peviitor-ro.github.io/ClujHackathon2026`).
+O singură linie de cod e suficientă:
 
 ```html
 <iframe
-  src="URL_DEPLOY/#/widget?tag=FACULTATE_TAG&title=Titlu&color=culoare"
+  src="https://ORGANIZATIE.github.io/REPO/#/widget"
   width="100%"
   height="650px"
+  style="border: none; background: transparent;"
 ></iframe>
 ```
 
-Parametrii se personalizează în funcție de facultate: `tag` pentru filtrarea joburilor, `title` pentru titlul afișat, `color` pentru tema vizuală. Vezi [documentația tehnică](docs/tehnica.md) pentru detalii complete.
+Fără parametri, widgetul folosește titlul și culoarea din `conf/widget.json`. Le poți suprascrie direct din URL:
+
+| Parametru | Descriere | Exemplu |
+|-----------|-----------|---------|
+| `title` | Titlul afișat în widget | `Joburi pentru studenți` |
+| `color` | Culoarea temei, hex (`#` se scrie `%23`) | `%234f46e5` |
+
+## Structura repository-ului
+
+| Cale | Rol |
+|------|-----|
+| `.github/workflows/setup.yml` | Acțiunea de configurare — singurul pas manual pentru o facultate |
+| `.github/workflows/refresh-jobs.yml` | Reîmprospătarea săptămânală a joburilor |
+| `.github/workflows/deploy.yml` | Build & deploy pe GitHub Pages (reutilizabil) |
+| `scripts/generate_jobs.mjs` | Curriculă → profil de competențe → căutare → matching → `jobs.json` |
+| `scripts/set_pages_url.mjs` | Salvează URL-ul de Pages și generează `EMBED.md` |
+| `conf/widget.json` | Configurarea widgetului (link curriculă, titlu, culoare, URL Pages, profil cache-uit) |
+| `jobs.json` | Joburile potrivite — apare după prima configurare, vezi [STRUCTURE.md](STRUCTURE.md) |
+| `EMBED.md` | Codul de integrare — apare după prima configurare |
+| `frontend/` | Aplicația React a widgetului |
+
+## Actualizarea joburilor
+
+Joburile se reîmprospătează automat în fiecare luni. Poți rula manual oricând acțiunea **2. Reimprospateaza joburile**, cu opțiunea de a reciti curricula dacă planul de învățământ s-a schimbat.
+
+`jobs.json` e importat la build time, așa că fiecare actualizare declanșează și un redeploy.
 
 ## Articole & mențiuni
 
 - **[Asociația Oportunități și Cariere — Cluj Hackathon 2026](https://www.linkedin.com/posts/asociatia-oportunitati-si-cariere_clujhackathon-clujhackathon2026-opensource-activity-7463907374190309376--UUN)** — Postare LinkedIn despre participarea echipei la hackathon
 - **[Andreea Radu — Experiența la Cluj Hackathon 2026](https://www.linkedin.com/posts/andreea-radu-379205302_clujhackathon-techforgood-voluntariat-share-7463915729734774784-4bjC/)** — Postare LinkedIn a unei studente în practică despre echipă și misiunea asociației
 - **[Carina Bancila — Mândră de echipă](https://www.linkedin.com/posts/carina-bancila_clujhackathon-clujhackathon2026-opensource-share-7463910730103365634-AzH2/)** — Postare LinkedIn a HR & OD Managerului despre implicarea echipei la hackathon
-
 
 ## Licență
 

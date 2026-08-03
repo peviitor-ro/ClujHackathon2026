@@ -1,4 +1,10 @@
-import localJobs from "../../../jobs.json";
+// jobs.json nu exista in template — e generat de workflow-ul de configurare.
+// import.meta.glob nu crapa build-ul cand fisierul lipseste, spre deosebire de un import direct.
+const jobsModules = import.meta.glob("../../../jobs.json", {
+  eager: true,
+  import: "default",
+});
+const localJobs = Object.values(jobsModules)[0] ?? [];
 
 const gradients = [
   "from-blue-500 to-cyan-600",
