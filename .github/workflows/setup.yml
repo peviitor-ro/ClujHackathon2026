@@ -113,6 +113,19 @@ jobs:
           PAGES_URL: ${{ steps.pages.outputs.base_url }}
         run: node scripts/set_pages_url.mjs --url="$PAGES_URL"
 
+      # Linkul apare sub "About", in dreapta sus pe pagina repository-ului.
+      # Cere Administration: write, pe care GITHUB_TOKEN nu il poate avea.
+      - name: Pune linkul widgetului in descrierea repository-ului
+        env:
+          GH_TOKEN: ${{ secrets.WIDGET_TOKEN }}
+          PAGES_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Fara WIDGET_TOKEN nu pot seta linkul pe pagina repository-ului."
+            exit 0
+          fi
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY" -f homepage="$PAGES_URL" --silent
+
       - name: Commit codul de integrare
         run: |
           git add conf/widget.json EMBED.md
