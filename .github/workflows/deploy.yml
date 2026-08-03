@@ -38,11 +38,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # enablement: true e no-op daca Pages e deja activat. Crearea unui site nou
+      # nu e posibila cu GITHUB_TOKEN, de aceea folosim WIDGET_TOKEN cand exista.
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+          token: ${{ secrets.WIDGET_TOKEN || github.token }}
 
       - name: Install dependencies
         run: npm install

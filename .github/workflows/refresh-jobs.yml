@@ -66,3 +66,5 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/deploy.yml
+    # fara asta, workflow-ul apelat nu vede WIDGET_TOKEN
+    secrets: inherit

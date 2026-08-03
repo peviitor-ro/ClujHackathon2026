@@ -46,12 +46,8 @@ jobs:
           sudo apt-get install -y -qq poppler-utils
           npm install -g opencode-ai@latest
 
-      - name: Activeaza GitHub Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
+      # Generarea joburilor dureaza ~15 minute, deci o facem si o commitem inainte
+      # de pasii de Pages, ca o eroare acolo sa nu arunce munca la gunoi.
       - name: Genereaza joburile din curricula
         env:
           CURRICULUM_URL: ${{ inputs.curriculum_url }}
@@ -65,20 +61,59 @@ jobs:
             --title="$TITLU" \
             --color="$CULOARE"
 
+      - name: Commit joburile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add jobs.json conf/widget.json
+          if git diff --cached --quiet; then
+            echo "Nimic de commis"
+          else
+            git commit -m "setup: genereaza joburile facultatii"
+            git push
+          fi
+
+      # GITHUB_TOKEN nu poate crea un site Pages (endpointul cere drepturi de
+      # administrator). Daca organizatia are secretul WIDGET_TOKEN, Pages se
+      # activeaza singur; altfel trebuie activat o data din Settings -> Pages.
+      - name: Activeaza GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+          token: ${{ secrets.WIDGET_TOKEN || github.token }}
+
+      - name: Explica esecul activarii Pages
+        if: failure() && steps.pages.outcome == 'failure'
+        run: |
+          {
+            echo "## GitHub Pages nu a putut fi activat automat"
+            echo ""
+            echo "Joburile au fost generate si commise — nu s-a pierdut nimic."
+            echo ""
+            echo "Activeaza Pages o singura data, apoi reia acest workflow:"
+            echo ""
+            echo "1. **Settings → Pages → Source** → alege **GitHub Actions**"
+            echo "2. Ruleaza din nou **1. Configureaza widgetul facultatii**"
+            echo ""
+            echo "Ca sa se activeze singur pe toate repo-urile viitoare, adauga"
+            echo "un secret de organizatie numit \`WIDGET_TOKEN\` (PAT cu"
+            echo "permisiunile *Administration: write* si *Pages: write*)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
       - name: Salveaza URL-ul de Pages si codul de integrare
         env:
           PAGES_URL: ${{ steps.pages.outputs.base_url }}
         run: node scripts/set_pages_url.mjs --url="$PAGES_URL"
 
-      - name: Commit
+      - name: Commit codul de integrare
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add jobs.json conf/widget.json EMBED.md
+          git add conf/widget.json EMBED.md
           if git diff --cached --quiet; then
             echo "Nimic de commis"
           else
-            git commit -m "setup: configureaza widgetul facultatii"
+            git commit -m "setup: adauga codul de integrare"
             git push
           fi
 
@@ -89,3 +124,5 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/deploy.yml
+    # fara asta, workflow-ul apelat nu vede WIDGET_TOKEN
+    secrets: inherit

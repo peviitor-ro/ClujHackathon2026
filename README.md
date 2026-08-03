@@ -10,8 +10,9 @@ Colectăm locurile de muncă de pe [peviitor.ro](https://peviitor.ro) și, porni
 
 ## Cum funcționează
 
-Totul se întâmplă într-o singură acțiune de GitHub, care primește ca input **linkul către planul de învățământ**:
+Totul pornește de la o singură acțiune, care primește **numele facultății** și **linkul către planul de învățământ**:
 
+0. Creează repository-ul facultății în organizație, din acest template
 1. Descarcă planul de învățământ (PDF-uri sau pagina HTML)
 2. Deduce cu AI profilul de competențe al studentului și cuvintele cheie de căutare
 3. Interoghează API-ul peviitor.ro cu acele cuvinte cheie
@@ -19,6 +20,10 @@ Totul se întâmplă într-o singură acțiune de GitHub, care primește ca inpu
 5. Activează GitHub Pages, publică widgetul și scrie codul de integrare în `EMBED.md`
 
 Nu există fișiere de curriculum sau de agent de întreținut manual — profilul de competențe e derivat la rulare și cache-uit în `conf/widget.json`.
+
+### Configurare, o singură dată
+
+Acțiunea de creare are nevoie de un secret de organizație numit `WIDGET_TOKEN`: un PAT fine-grained legat de organizație, cu acces la **All repositories** și permisiunile *Administration: write*, *Contents: write*, *Pages: write*, *Actions: write*. `GITHUB_TOKEN` nu poate crea repository-uri și nici activa Pages.
 
 ## Stack tehnologic
 
@@ -29,11 +34,12 @@ Nu există fișiere de curriculum sau de agent de întreținut manual — profil
 
 ## Pentru facultăți
 
-1. **Use this template** → creează un repository **public** în organizație
-2. Din tab-ul **Actions**, rulează **1. Configureaza widgetul facultatii** cu linkul planului de învățământ
-3. Copiază `<iframe>`-ul din `EMBED.md` pe site-ul facultății
+1. Din tab-ul **Actions** al acestui repository, rulează **0. Creeaza widget pentru o facultate** cu numele facultății și linkul planului de învățământ
+2. Așteaptă ~15 minute și copiază `<iframe>`-ul din `EMBED.md` al repository-ului nou
 
-Ghidul complet, cu capturi și explicații pentru fiecare câmp, e în [wiki](https://github.com/peviitor-ro/jobs-widget/wiki).
+Acțiunea creează singură repository-ul facultății în organizație, activează GitHub Pages și publică widgetul. Nu trebuie să creezi repository-ul manual.
+
+Ghidul complet e în [wiki](https://github.com/peviitor-widget/jobs-widget/wiki).
 
 ## Widget încorporabil
 
@@ -59,9 +65,11 @@ Fără parametri, widgetul folosește titlul și culoarea din `conf/widget.json`
 
 | Cale | Rol |
 |------|-----|
-| `.github/workflows/setup.yml` | Acțiunea de configurare — singurul pas manual pentru o facultate |
+| `.github/workflows/create-widget.yml` | Rulat în template: creează repository-ul facultății și pornește configurarea în el |
+| `.github/workflows/setup.yml` | Configurarea propriu-zisă, rulată în repository-ul facultății |
 | `.github/workflows/refresh-jobs.yml` | Reîmprospătarea săptămânală a joburilor |
 | `.github/workflows/deploy.yml` | Build & deploy pe GitHub Pages (reutilizabil) |
+| `scripts/faculty_slug.mjs` | Numele facultății → numele repository-ului |
 | `scripts/generate_jobs.mjs` | Curriculă → profil de competențe → căutare → matching → `jobs.json` |
 | `scripts/set_pages_url.mjs` | Salvează URL-ul de Pages și generează `EMBED.md` |
 | `conf/widget.json` | Configurarea widgetului (link curriculă, titlu, culoare, URL Pages, profil cache-uit) |
