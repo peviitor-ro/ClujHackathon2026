@@ -2,7 +2,7 @@
 // Valorile de aici sunt fallback-ul cand iframe-ul nu primeste parametri in URL.
 import widgetConfig from "../../conf/widget.json";
 
-export const DEFAULT_TITLE = "Joburi pentru studenți";
+export const DEFAULT_TITLE = "Locuri de muncă pentru juniori";
 export const DEFAULT_COLOR = "#4f46e5";
 
 export const config = {

@@ -121,6 +121,33 @@ export function JobsWrapper({
           ))}
         </div>
       )}
+
+      {/* Footer Branding peViitor */}
+      <div className="flex flex-col items-center justify-center gap-1 pt-2.5 mt-0.5 border-t border-border">
+        <span className="text-[11px] font-semibold text-text/70 select-none">
+          Descoperă mai multe pe
+        </span>
+        <div className="relative group inline-flex items-center">
+          <a
+            href="https://peviitor.ro"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center group/logo"
+            aria-label="peViitor.ro"
+          >
+            <img
+              src="peviitor-logo.svg"
+              alt="peViitor.ro"
+              className="h-5 w-auto object-contain transition-all duration-200 group-hover/logo:brightness-50 dark:brightness-200 dark:group-hover/logo:brightness-125"
+            />
+          </a>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 hidden group-hover:flex items-center z-50 pointer-events-none">
+            <div className="bg-slate-900 text-slate-100 text-[11px] font-medium px-2.5 py-1 rounded-[10px] whitespace-nowrap border border-slate-700/60 shadow-lg">
+              Deschide peViitor.ro
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
