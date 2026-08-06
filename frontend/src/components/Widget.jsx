@@ -6,7 +6,7 @@ import { Moon, Sun } from "lucide-react";
 
 function Widget() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("peviitor-theme") || "light";
+    return localStorage.getItem("peviitor-widget-theme") || "light";
   });
 
   const [jobs, setJobs] = useState([]);
@@ -30,23 +30,11 @@ function Widget() {
   }, []);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    localStorage.setItem("peviitor-theme", theme);
+    localStorage.setItem("peviitor-widget-theme", theme);
   }, [theme]);
 
-  // Stilul inline bate si :root, si .dark, deci culoarea facultatii tine pe ambele teme
-  useEffect(() => {
-    if (!color) return;
-    document.documentElement.style.setProperty("--accent", color);
-  }, [color]);
-
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   const handleApply = (job) => {
@@ -58,8 +46,14 @@ function Widget() {
 
   return (
     <div
-      className="bg-bg text-text transition-colors duration-200 flex flex-col shadow-sm overflow-hidden border border-border rounded-xl"
-      style={{ maxWidth: "320px", width: "100%" }}
+      className={`bg-bg text-text transition-colors duration-200 flex flex-col overflow-hidden border border-border rounded-xl ${
+        theme === "dark" ? "dark" : "light"
+      }`}
+      style={{
+        maxWidth: "320px",
+        width: "100%",
+        ...(color ? { "--accent": color } : {}),
+      }}
     >
       <div className="flex items-center justify-between px-3 py-2 bg-bg border-b border-neutral-400/30">
         <span className="text-sm font-bold tracking-tight text-text-h truncate pr-2">
@@ -78,11 +72,15 @@ function Widget() {
         </button>
       </div>
 
-      <main className="bg-bg overflow-y-auto p-3.5 max-h-[420px]" id="main-content">
+      <main className="bg-bg overflow-y-auto p-3.5 max-h-130" id="main-content">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-xs text-text/60 font-semibold gap-2">
-            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
+            <div
+              className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+              style={{
+                borderColor: "var(--accent)",
+                borderTopColor: "transparent",
+              }}
             ></div>
             <span>Se încarcă joburile...</span>
           </div>

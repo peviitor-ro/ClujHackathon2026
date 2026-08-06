@@ -13,16 +13,16 @@ const Button = React.forwardRef(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all focus:outline-none disabled:pointer-events-none disabled:opacity-50 active:scale-98 select-none";
+      "inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50 select-none";
 
     const variants = {
-      default: "btn-accent shadow-sm focus:ring-2 focus:ring-offset-0",
+      default: "btn-accent focus:ring-2 focus:ring-offset-0",
       outline:
         "border border-border bg-bg-card hover:bg-code-bg text-text-h focus:ring-2 focus:ring-accent/20 focus:ring-offset-0",
       secondary:
         "bg-code-bg hover:bg-border/50 text-text-h focus:ring-2 focus:ring-accent/20 focus:ring-offset-0",
       destructive:
-        "bg-rose-600 hover:bg-rose-700 text-white shadow-sm focus:ring-2 focus:ring-rose-500/20 focus:ring-offset-0",
+        "bg-rose-600 hover:bg-rose-700 text-white focus:ring-2 focus:ring-rose-500/20 focus:ring-offset-0",
       ghost: "hover:bg-code-bg hover:text-text-h text-text",
       link: "text-accent hover:underline underline-offset-4 font-semibold",
     };

@@ -4,38 +4,50 @@ const jobsModules = import.meta.glob("../../../jobs.json", {
   eager: true,
   import: "default",
 });
-const localJobs = Object.values(jobsModules)[0] ?? [];
+let localJobs = Object.values(jobsModules)[0] ?? [];
 
-const gradients = [
-  "from-blue-500 to-cyan-600",
-  "from-indigo-600 to-indigo-900",
-  "from-sky-400 to-blue-600",
-  "from-red-500 to-rose-700",
-  "from-amber-600 to-yellow-800",
-  "from-emerald-500 to-teal-700",
-  "from-purple-500 to-indigo-700",
-  "from-pink-500 to-rose-600",
-  "from-violet-600 to-purple-900",
-  "from-teal-500 to-emerald-600",
-  "from-orange-500 to-red-600",
-  "from-fuchsia-600 to-pink-700",
-  "from-cyan-500 to-blue-600",
-  "from-yellow-500 to-amber-600",
-  "from-blue-800 to-indigo-950",
+const solidColors = [
+  "bg-blue-600 text-white",
+  "bg-indigo-600 text-white",
+  "bg-sky-500 text-white",
+  "bg-rose-600 text-white",
+  "bg-amber-600 text-white",
+  "bg-emerald-600 text-white",
+  "bg-purple-600 text-white",
+  "bg-pink-600 text-white",
+  "bg-violet-600 text-white",
+  "bg-teal-600 text-white",
+  "bg-orange-600 text-white",
+  "bg-fuchsia-600 text-white",
+  "bg-cyan-600 text-white",
+  "bg-yellow-600 text-white",
+  "bg-blue-700 text-white",
 ];
 
 function getLogoBg(companyName) {
-  if (!companyName) return gradients[0];
+  if (!companyName) return solidColors[0];
   let hash = 0;
   for (let i = 0; i < companyName.length; i++) {
     hash = companyName.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % gradients.length;
-  return gradients[index];
+  const index = Math.abs(hash) % solidColors.length;
+  return solidColors[index];
 }
 
 export async function getJobs() {
-  return localJobs.map((job, index) => {
+  let jobsList = localJobs;
+  if (!jobsList || jobsList.length === 0) {
+    try {
+      const res = await fetch("./jobs.json");
+      if (res.ok) {
+        jobsList = await res.json();
+      }
+    } catch {
+      // fallback silent
+    }
+  }
+
+  return (jobsList || []).map((job, index) => {
     const company = job.company || "Companie Necunoscută";
     return {
       id: job._version_ ? `${job._version_}-${index}` : `job-${index}`,
@@ -51,8 +63,9 @@ export async function getJobs() {
       date: job.date || null,
       status: job.status || "published",
       tags: job.tags || [],
-      url: job.url || "",
-      _root_: job._root_ || job.url || "",
+      url: Array.isArray(job.url) ? job.url[0] : job.url || "",
+      _root_:
+        job._root_ || (Array.isArray(job.url) ? job.url[0] : job.url) || "",
     };
   });
 }
