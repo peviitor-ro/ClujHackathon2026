@@ -36,7 +36,7 @@ function formatDate(iso) {
 
 function HomePage() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("peviitor-theme") || "light";
+    return localStorage.getItem("peviitor-homepage-theme") || "light";
   });
   const [copied, setCopied] = useState(false);
 
@@ -44,10 +44,12 @@ function HomePage() {
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
+      root.classList.remove("light");
     } else {
+      root.classList.add("light");
       root.classList.remove("dark");
     }
-    localStorage.setItem("peviitor-theme", theme);
+    localStorage.setItem("peviitor-homepage-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

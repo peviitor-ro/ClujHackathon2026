@@ -9,13 +9,13 @@ function EmptyJobCard({ totalJobsCount, onResetFilter }) {
 
   return (
     <Card
-      className="relative flex flex-col justify-between overflow-hidden border-border/80 bg-bg-card shadow-sm animate-fade-in mx-auto"
+      className="relative flex flex-col justify-between overflow-hidden bg-bg-card shadow-sm animate-fade-in mx-auto"
       style={{ maxWidth: "280px", width: "100%" }}
     >
       <CardHeader className="p-4 pb-3 flex flex-col space-y-3">
         <div className="flex gap-3 items-center w-full">
           <div
-            className={`h-10 w-10 rounded-xl bg-gradient-to-br ${
+            className={`h-10 w-10 rounded-xl bg-linear-to-br ${
               isNoDataAtAll
                 ? "from-red-500 to-rose-600"
                 : "from-slate-500 to-slate-700"
@@ -78,11 +78,13 @@ export function JobsWrapper({
       .filter(Boolean)
       .map((el) => el.offsetHeight);
     if (heights.length === 0) return;
-    const maxH = Math.max(...heights);
-    listRef.current.style.maxHeight = `${maxH}px`;
+    const visibleCount = Math.min(heights.length, 2);
+    const cardH = Math.max(...heights);
+    const gapH = 12;
+    const totalH = cardH * visibleCount + gapH * (visibleCount - 1) + 8;
+    listRef.current.style.maxHeight = `${totalH}px`;
   }, []);
 
-  // Observe all card elements and keep maxHeight equal to the tallest one
   useEffect(() => {
     cardRefs.current = cardRefs.current.slice(0, filteredJobs.length);
     const observer = new ResizeObserver(updateHeight);
@@ -93,7 +95,6 @@ export function JobsWrapper({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Jobs List */}
       {filteredJobs.length === 0 ? (
         <EmptyJobCard
           totalJobsCount={totalJobsCount}
@@ -104,7 +105,7 @@ export function JobsWrapper({
           ref={listRef}
           role="list"
           aria-label="Listă locuri de muncă"
-          className="flex flex-col gap-3 overflow-y-auto overflow-x-hidden pr-1 snap-y snap-mandatory"
+          className="flex flex-col gap-3 overflow-y-auto overflow-x-hidden p-1 snap-y snap-mandatory"
         >
           {filteredJobs.map((job, idx) => (
             <div
@@ -121,15 +122,32 @@ export function JobsWrapper({
         </div>
       )}
 
-      <Button
-        variant="outline"
-        className="w-full py-2.5 mt-1 btn-accent-outline font-bold"
-        onClick={() =>
-          window.open("https://peviitor.ro/", "_blank", "noopener,noreferrer")
-        }
-      >
-        Mai multe peViitor
-      </Button>
+      {/* Footer Branding peViitor */}
+      <div className="flex flex-col items-center justify-center gap-1 pt-2.5 mt-0.5 border-t border-border">
+        <span className="text-[11px] font-semibold text-text/70 select-none">
+          Descoperă mai multe pe
+        </span>
+        <div className="relative group inline-flex items-center">
+          <a
+            href="https://peviitor.ro"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center group/logo"
+            aria-label="peViitor.ro"
+          >
+            <img
+              src="peviitor-logo.svg"
+              alt="peViitor.ro"
+              className="h-5 w-auto object-contain transition-all duration-200 group-hover/logo:brightness-50 dark:brightness-200 dark:group-hover/logo:brightness-125"
+            />
+          </a>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 hidden group-hover:flex items-center z-50 pointer-events-none">
+            <div className="bg-slate-900 text-slate-100 text-[11px] font-medium px-2.5 py-1 rounded-[10px] whitespace-nowrap border border-slate-700/60 shadow-lg">
+              Deschide peViitor.ro
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

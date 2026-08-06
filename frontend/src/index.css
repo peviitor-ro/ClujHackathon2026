@@ -21,7 +21,8 @@ a[aria-disabled="true"],
   cursor: not-allowed;
 }
 
-:root {
+:root,
+.light {
   --bg: #f8fafc;
   --bg-card: #ffffff;
   --text: #475569;

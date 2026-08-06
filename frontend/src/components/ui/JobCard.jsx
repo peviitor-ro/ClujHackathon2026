@@ -1,8 +1,7 @@
 import { useRef, useState, useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Card, CardHeader, CardFooter } from "./card";
 import { Button } from "./button";
-import { Badge } from "./badge";
 
 function HoverScrollingText({ text, className, as: Component = "div" }) {
   const containerRef = useRef(null);
@@ -65,70 +64,38 @@ function formatCompany(company) {
 export function JobCard({ job, onApply }) {
   return (
     <Card
-      className="relative flex flex-col justify-between overflow-hidden hover:border-text/30 hover:shadow-sm"
+      className="relative flex flex-col justify-between overflow-hidden hover:border-text/30"
       style={{ maxWidth: "280px", width: "100%" }}
     >
-      <CardHeader className="p-4 pb-3 flex flex-col space-y-3">
-        <div className="flex items-start justify-between gap-2 w-full">
-          <div className="flex gap-3 items-center min-w-0 flex-1">
-            <div
-              className={`h-10 w-10 rounded-xl bg-gradient-to-br ${job.logoBg} flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0`}
-              aria-hidden="true"
-            >
-              {job.company.split(" ")[0].substring(0, 2).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <HoverScrollingText
-                as="h3"
-                text={formatTitle(job.title)}
-                className="text-xs font-bold text-text-h m-0 text-left leading-snug"
-              />
-              <HoverScrollingText
-                text={formatCompany(job.company)}
-                className="text-[11px] font-semibold text-text text-left mt-0.5"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Location and Tags */}
-        <div className="flex items-center justify-between gap-3 text-[11px] font-medium text-text w-full overflow-hidden">
-          {job.location && (
-            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
-              <MapPin className="w-3 h-3 text-text/70 shrink-0" />
-              <HoverScrollingText
-                text={job.location}
-                className="text-[11px] font-medium text-text text-left"
-              />
-            </div>
-          )}
+      <CardHeader className="p-3.5 flex flex-row items-center justify-between gap-3">
+        <div className="flex gap-3 items-center min-w-0 flex-1">
           <div
-            className="flex items-center gap-1 shrink-0 ml-auto"
-            aria-label="Tehnologii și competențe"
+            className={`h-10 w-10 rounded-xl ${job.logoBg} flex items-center justify-center font-bold text-sm shrink-0`}
+            aria-hidden="true"
           >
-            {((job.tags || []).length > 2
-              ? [...(job.tags || []).slice(0, 2), "..."]
-              : job.tags || []
-            ).map((tag, idx) => (
-              <Badge
-                key={`${tag}-${idx}`}
-                variant="secondary"
-                className="text-[10px] px-1.5 py-0.5 whitespace-nowrap"
-              >
-                {tag}
-              </Badge>
-            ))}
+            {job.company.split(" ")[0].substring(0, 2).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <HoverScrollingText
+              as="h3"
+              text={formatTitle(job.title)}
+              className="text-xs font-bold text-text-h m-0 text-left leading-snug"
+            />
+            <HoverScrollingText
+              text={formatCompany(job.company)}
+              className="text-[11px] font-semibold text-text text-left mt-0.5"
+            />
           </div>
         </div>
       </CardHeader>
-
-      <CardFooter className="pb-0 px-0 pt-0 flex items-center">
+      <CardFooter className="p-0">
         <Button
           onClick={() => onApply(job)}
-          className="w-full text-xs rounded-none py-0 h-8"
+          className="w-full h-9 rounded-t-none text-[12px] tracking-wide font-bold flex items-center justify-center gap-1.5"
           aria-label={`Aplică la jobul ${job.title} de la ${job.company}`}
         >
-          Aplică
+          <span>Aplică</span>
+          <ExternalLink className="w-3.5 h-3.5" />
         </Button>
       </CardFooter>
     </Card>
