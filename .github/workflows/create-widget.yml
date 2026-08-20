@@ -58,6 +58,7 @@ jobs:
       - name: Calculeaza numele repository-ului
         id: slug
         env:
+          UNIVERSITATE: ${{ inputs.universitate }}
           FACULTATE: ${{ inputs.facultate }}
         run: |
           SLUG_UNIV=$(node scripts/university_slug.mjs "$UNIVERSITATE")
