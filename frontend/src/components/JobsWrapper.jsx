@@ -30,11 +30,11 @@ function EmptyJobCard({ totalJobsCount, onResetFilter }) {
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
             <h3 className="text-xs font-bold text-text-h m-0 text-left leading-snug">
-              {isNoDataAtAll ? "Eroare încărcare" : "Fără joburi"}
+              {isNoDataAtAll ? "Locuri de muncă indisponibile momentan" : "Fără joburi"}
             </h3>
             <p className="text-[11px] font-semibold text-text text-left mt-0.5">
               {isNoDataAtAll
-                ? "Reîncearcă mai târziu"
+                ? "Încearcă mai târziu"
                 : "Selectează alt filtru"}
             </p>
           </div>
