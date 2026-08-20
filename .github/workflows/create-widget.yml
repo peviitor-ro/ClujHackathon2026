@@ -60,7 +60,9 @@ jobs:
         env:
           FACULTATE: ${{ inputs.facultate }}
         run: |
-          NAME=$(node scripts/faculty_slug.mjs "$FACULTATE")
+          SLUG_UNIV=$(node scripts/university_slug.mjs "$UNIVERSITATE")
+          SLUG_FAC=$(node scripts/faculty_slug.mjs "$FACULTATE")
+          NAME="${SLUG_UNIV}-${SLUG_FAC}"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "Repository nou: $ORG/$NAME"
 
