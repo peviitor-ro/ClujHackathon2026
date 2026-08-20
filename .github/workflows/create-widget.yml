@@ -87,6 +87,13 @@ jobs:
             -f description="Widget de joburi — $FACULTATE" \
             -F private=false
 
+      - name: Seteaza linkul GitHub Pages in About
+        env:
+          NAME: ${{ steps.slug.outputs.name }}
+        run: |
+          gh api -X PATCH "repos/$ORG/$NAME" \
+            -f homepage="https://$ORG.github.io/$NAME/"
+
       # Workflow-urile nu sunt inregistrate instant dupa creare
       - name: Asteapta ca workflow-urile sa fie gata
         env:
